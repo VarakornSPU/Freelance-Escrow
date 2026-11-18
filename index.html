@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freelance Escrow & Smart Payment Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Prompt', sans-serif;
+        }
+
+        body {
+            background-color: #f4f7f6;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 950px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 24px;
+        }
+
+        .wallet-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #2980b9;
+        }
+
+        .btn-success {
+            background-color: #2ecc71;
+        }
+
+        .btn-success:hover {
+            background-color: #27ae60;
+        }
+
+        .btn-warning {
+            background-color: #e67e22;
+        }
+
+        .btn-warning:hover {
+            background-color: #d35400;
+        }
+
+        .btn-danger {
+            background-color: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+        }
+
+        .btn-secondary {
+            background-color: #7f8c8d;
+        }
+
+        .btn-secondary:hover {
+            background-color: #636e72;
+        }
+
+        .btn-admin {
+            background-color: #8e44ad;
+        }
+
+        .btn-admin:hover {
+            background-color: #732d91;
+        }
+
+        .card {
+            background: #fafbfc;
+            border: 1px solid #e1e4e8;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+
+        .card-employer {
+            border-left: 6px solid #3498db;
+        }
+
+        .card-freelancer {
+            border-left: 6px solid #e67e22;
+        }
+
+        .card-dispute {
+            border-left: 6px solid #e74c3c;
+        }
+
+        .card-tracking {
+            border-left: 6px solid #2ecc71;
+        }
+
+        .card-admin {
+            border-left: 6px solid #8e44ad;
+            display: none;
+        }
+
+        .badge {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .badge-employer {
+            background-color: #3498db;
+        }
+
+        .badge-freelancer {
+            background-color: #e67e22;
+        }
+
+        .badge-dispute {
+            background-color: #e74c3c;
+        }
+
+        .badge-tracking {
+            background-color: #2ecc71;
+        }
+
+        .badge-admin {
+            background-color: #8e44ad;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #34495e;
+            padding-right: 120px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 80px;
+        }
+
+        .wallet-info {
+            font-size: 13px;
+            color: #7f8c8d;
+            background: #ecf0f1;
+            padding: 8px 12px;
+            border-radius: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            font-size: 13px;
+        }
+
+        th {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f1f2f6;
+        }
+
+        .status-pill {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .status-0 {
+            background-color: #3498db;
+        }
+
+        .status-1 {
+            background-color: #f1c40f;
+            color: #333;
+        }
+
+        .status-2 {
+            background-color: #e67e22;
+        }
+
+        .status-3 {
+            background-color: #2ecc71;
+        }
+
+        .status-4 {
+            background-color: #e74c3c;
+        }
+
+        .status-5 {
+            background-color: #95a5a6;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>💼 Freelance Escrow & Smart Payment Platform</h1>
+            <div class="wallet-container">
+                <span id="walletAddress" class="wallet-info">ยังไม่ได้เชื่อมต่อ Wallet</span>
+                <button id="connectWalletBtn" class="btn" onclick="connectWallet()">เชื่อมต่อ MetaMask</button>
+                <button id="logoutBtn" class="btn btn-danger" style="display: none;"
+                    onclick="logoutWallet()">ออกจากระบบ</button>
+            </div>
+        </header>
+
+        <!-- ส่วนที่ 0: Tracking Dashboard -->
+        <div class="card card-tracking">
+            <span class="badge badge-tracking">Dashboard</span>
+            <h2>ติดตามสถานะโครงการทั้งหมด (Project Tracking)</h2>
+            <button class="btn btn-secondary" onclick="loadProjects()">โหลดข้อมูลโครงการทั้งหมด</button>
+            <div style="overflow-x: auto; margin-top: 15px;">
+                <table id="projectTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>ชื่องาน</th>
+                            <th>งบ (ETH)</th>
+                            <th>ผู้ว่าจ้าง</th>
+                            <th>ฟรีแลนซ์</th>
+                            <th>สถานะ</th>
+                            <th>ผลงาน</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="7" style="text-align: center; color: #7f8c8d;">กรุณาเชื่อมต่อ Wallet
+                                และกดปุ่มโหลดข้อมูล</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ Admin พิเศษ -->
+        <div class="card card-admin" id="adminCard">
+            <span class="badge badge-admin">Admin Only</span>
+            <h2>ผู้ดูแลระบบ: พิจารณาตัดสินข้อพิพาท (Resolve Dispute)</h2>
+            <div class="form-group">
+                <label>ระบุ Project ID ที่มีข้อพิพาท (Status: Disputed)</label>
+                <input type="number" id="adminProjectId" placeholder="1">
+            </div>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn-success" onclick="resolveDispute(true)">⚖️ ตัดสินให้ "ฟรีแลนซ์ชนะ"
+                    (โอนเงินให้ฟรีแลนซ์)</button>
+                <button class="btn btn-warning" onclick="resolveDispute(false)">⚖️ ตัดสินให้ "ผู้ว่าจ้างชนะ"
+                    (คืนเงินให้ผู้ว่าจ้าง)</button>
+            </div>
+        </div>
+
+        <!-- ส่วนที่ 1: ผู้ว่าจ้าง สร้างสัญญา -->
+        <div class="card card-employer">
+            <span class="badge badge-employer">ผู้ว่าจ้าง (Employer)</span>
+            <h2>1. สร้างข้อตกลงการจ้างงาน</h2>
+            <div class="form-group">
+                <label>ชื่องาน / โครงการ</label>
+                <input type="text" id="projectTitle" placeholder="เช่น พัฒนาเว็บไซต์ E-Commerce">
+            </div>
+            <div class="form-group">
+                <label>รายละเอียดงาน</label>
+                <textarea id="projectDesc" placeholder="ระบุขอบเขตงานและเงื่อนไข..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>งบประมาณค่าจ้าง (ETH)</label>
+                <input type="number" id="projectAmount" step="0.01" placeholder="0.1">
+            </div>
+            <div class="form-group">
+                <label>ระยะเวลาส่งมอบ (วัน)</label>
+                <input type="number" id="projectDays" placeholder="7">
+            </div>
+            <div class="form-group">
+                <label>Wallet Address ของฟรีแลนซ์</label>
+                <input type="text" id="freelancerAddress" placeholder="0x...">
+            </div>
+            <button class="btn btn-success" onclick="createContract()">สร้างสัญญา (Create Contract)</button>
+        </div>
+
+        <!-- ส่วนที่ 2: ผู้ว่าจ้าง ฝากเงิน -->
+        <div class="card card-employer">
+            <span class="badge badge-employer">ผู้ว่าจ้าง (Employer)</span>
+            <h2>2. ฝากเงินเข้าสัญญา (Deposit Payment)</h2>
+            <div class="form-group">
+                <label>ระบุ Project ID ที่ต้องการฝากเงิน</label>
+                <input type="number" id="depositProjectId" placeholder="1">
+            </div>
+            <div class="form-group">
+                <label>ยอดเงินฝาก (ต้องตรงกับยอดที่ตกลงไว้เป็น ETH)</label>
+                <input type="number" id="depositAmountInput" step="0.01" placeholder="0.1">
+            </div>
+            <button class="btn" onclick="depositPayment()">ฝากเงินเข้า Escrow</button>
+        </div>
+
+        <!-- ส่วนที่ 3: ฟรีแลนซ์ ส่งงาน -->
+        <div class="card card-freelancer">
+            <span class="badge badge-freelancer">ฟรีแลนซ์ (Freelancer)</span>
+            <h2>3. ส่งมอบงาน (Submit Work)</h2>
+            <div class="form-group">
+                <label>ระบุ Project ID ของงานที่คุณรับทำ</label>
+                <input type="number" id="submitProjectId" placeholder="1">
+            </div>
+            <button class="btn btn-warning" onclick="submitWork()">ส่งมอบงาน (แนบลิงก์ผลงาน)</button>
+        </div>
+
+        <!-- ส่วนที่ 4: ผู้ว่าจ้าง อนุมัติงาน -->
+        <div class="card card-employer">
+            <span class="badge badge-employer">ผู้ว่าจ้าง (Employer)</span>
+            <h2>4. ตรวจรับและอนุมัติจ่ายเงิน (Approve & Release)</h2>
+            <div class="form-group">
+                <label>ระบุ Project ID ที่ต้องการตรวจรับงาน</label>
+                <input type="number" id="approveProjectId" placeholder="1">
+            </div>
+            <button class="btn btn-success" onclick="approveAndRelease()">อนุมัติและโอนเงินให้ฟรีแลนซ์</button>
+        </div>
+
+        <!-- ส่วนที่ 5: แจ้งข้อพิพาท -->
+        <div class="card card-dispute">
+            <span class="badge badge-dispute">คู่สัญญา (Both)</span>
+            <h2>5. แจ้งข้อพิพาท (Raise Dispute)</h2>
+            <div class="form-group">
+                <label>ระบุ Project ID ที่มีปัญหาข้อพิพาท</label>
+                <input type="number" id="disputeProjectId" placeholder="1">
+            </div>
+            <button class="btn btn-danger" onclick="raiseDispute()">แจ้งข้อพิพาท (Raise Dispute)</button>
+        </div>
+    </div>
+
+    <script>
+        const contractAddress = "0xC6b2c5E46075F9194166f7ef997f7BDe56286721"; // แทนที่ด้วยแอดเดรสสมาร์ทคอนแทคของคุณ
+        const adminAddress = "0x7aebC2A3920D177162f95539FAE8CeCc2D495Ae8".toLowerCase();
+
+        const contractABI = [
+            "function admin() view returns (address)",
+            "function projectCounter() view returns (uint256)",
+            "function projects(uint256) view returns (uint projectId, string title, string description, uint amount, uint deadline, address employer, address freelancer, uint8 status, string workHash)",
+            "function createContract(string memory _title, string memory _description, uint _amount, uint _durationDays, address payable _freelancer) public",
+            "function depositPayment(uint _projectId) public payable",
+            "function submitWork(uint _projectId, string memory _workHash) public",
+            "function approveAndRelease(uint _projectId) public",
+            "function raiseDispute(uint _projectId) public",
+            "function adminResolveDispute(uint _projectId, bool payToFreelancer) public"
+        ];
+
+        let provider, signer, contract, userAddress;
+
+        async function connectWallet() {
+            if (window.ethereum) {
+                try {
+                    await window.ethereum.request({
+                        method: "wallet_requestPermissions",
+                        params: [{ eth_accounts: {} }]
+                    });
+
+                    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+                    userAddress = accounts[0];
+
+                    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+                    signer = provider.getSigner();
+
+                    updateUIConnected(userAddress);
+                    contract = new ethers.Contract(contractAddress, contractABI, signer);
+
+                    checkAdminRole(userAddress);
+                    loadProjects();
+                } catch (error) {
+                    console.error(error);
+                    alert("การเชื่อมต่อถูกยกเลิกหรือล้มเหลว: " + error.message);
+                }
+            } else {
+                alert("กรุณาติดตั้งส่วนขยาย MetaMask ในเบราว์เซอร์!");
+            }
+        }
+
+        function checkAdminRole(address) {
+            const adminCard = document.getElementById("adminCard");
+            if (address.toLowerCase() === adminAddress) {
+                adminCard.style.display = "block";
+            } else {
+                adminCard.style.display = "none";
+            }
+        }
+
+        function updateUIConnected(address) {
+            document.getElementById("walletAddress").innerText = address.substring(0, 6) + "..." + address.substring(38);
+            document.getElementById("connectWalletBtn").innerText = "เปลี่ยนบัญชี";
+            document.getElementById("logoutBtn").style.display = "inline-block";
+        }
+
+        function logoutWallet() {
+            provider = null;
+            signer = null;
+            contract = null;
+            userAddress = null;
+
+            document.getElementById("walletAddress").innerText = "ยังไม่ได้เชื่อมต่อ Wallet";
+            document.getElementById("connectWalletBtn").innerText = "เชื่อมต่อ MetaMask";
+            document.getElementById("logoutBtn").style.display = "none";
+            document.getElementById("adminCard").style.display = "none";
+            alert("ออกจากระบบกระเป๋าเงินเรียบร้อยแล้ว");
+        }
+
+        if (window.ethereum) {
+            window.ethereum.on('accountsChanged', (accounts) => {
+                if (accounts.length > 0) {
+                    userAddress = accounts[0];
+                    provider = new ethers.providers.Web3Provider(window.ethereum, "any");
+                    signer = provider.getSigner();
+                    contract = new ethers.Contract(contractAddress, contractABI, signer);
+                    updateUIConnected(userAddress);
+                    checkAdminRole(userAddress);
+                    loadProjects();
+                } else {
+                    logoutWallet();
+                }
+            });
+        }
+
+        async function loadProjects() {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+            const tbody = document.querySelector("#projectTable tbody");
+            try {
+                const network = await provider.getNetwork();
+                const customProvider = new ethers.providers.Web3Provider(window.ethereum, {
+                    name: network.name,
+                    chainId: network.chainId,
+                    ensAddress: null
+                });
+
+                const contractReader = new ethers.Contract(contractAddress, contractABI, customProvider);
+
+                const totalProjects = await contractReader.projectCounter();
+                tbody.innerHTML = "";
+
+                if (totalProjects.toNumber() === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">ยังไม่มีโครงการในระบบ</td></tr>`;
+                    return;
+                }
+
+                const statusNames = ["Created (สร้างแล้ว)", "Funded (ฝากเงินแล้ว)", "Submitted (ส่งงานแล้ว)", "Completed (เสร็จสิ้น)", "Disputed (มีข้อพิพาท)", "Refunded (คืนเงินแล้ว)"];
+
+                for (let i = 1; i <= totalProjects.toNumber(); i++) {
+                    const proj = await contractReader.projects(i);
+                    const ethAmount = ethers.utils.formatEther(proj.amount);
+                    const shortEmployer = proj.employer.substring(0, 6) + "..." + proj.employer.substring(38);
+                    const shortFreelancer = proj.freelancer.substring(0, 6) + "..." + proj.freelancer.substring(38);
+
+                    let workLink = proj.workHash ? `<a href="${proj.workHash}" target="_blank">📄 เปิดดูงาน</a>` : "-";
+
+                    const row = `<tr>
+                        <td><strong>#${proj.projectId.toString()}</strong></td>
+                        <td>${proj.title}</td>
+                        <td>${ethAmount} ETH</td>
+                        <td>${shortEmployer}</td>
+                        <td>${shortFreelancer}</td>
+                        <td><span class="status-pill status-${proj.status}">${statusNames[proj.status]}</span></td>
+                        <td>${workLink}</td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                }
+            } catch (err) {
+                console.error(err);
+                // ดักจับ Error และแสดงข้อความ "ยังไม่มีรายการทำการ" แทนการแจ้งเตือน Error ดิบๆ
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #7f8c8d;">ยังไม่มีรายการโครงการในระบบ (หรือสัญญาใหม่ยังไม่มีประวัติ)</td></tr>`;
+            }
+        }
+
+        async function createContract() {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+            const title = document.getElementById("projectTitle").value;
+            const desc = document.getElementById("projectDesc").value;
+            const amount = document.getElementById("projectAmount").value;
+            const days = document.getElementById("projectDays").value;
+            const freelancer = document.getElementById("freelancerAddress").value;
+
+            try {
+                const amountInWei = ethers.utils.parseEther(amount);
+                const tx = await contract.createContract(title, desc, amountInWei, days, freelancer);
+                alert("กำลังส่งธุรกรรม... กรุณารอสักครู่");
+                await tx.wait();
+                alert("สร้างข้อตกลงสำเร็จ!");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("เกิดข้อผิดพลาดในการสร้างสัญญา: " + (err.reason || err.message));
+            }
+        }
+
+        async function depositPayment() {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+
+            const id = document.getElementById("depositProjectId").value;
+            const amount = document.getElementById("depositAmountInput").value;
+
+            // เช็กว่ากรอกข้อมูลครบไหม
+            if (!id || !amount) {
+                alert("กรุณากรอก Project ID และจำนวนเงินฝากให้ครบถ้วน");
+                return;
+            }
+
+            try {
+                // แปลงค่า ETH เป็น Wei อย่างปลอดภัย
+                const amountInWei = ethers.utils.parseEther(amount.toString());
+
+                const tx = await contract.depositPayment(id, { value: amountInWei });
+                alert("กำลังฝากเงิน... กรุณารอสักครู่");
+                await tx.wait();
+                alert("ฝากเงินเข้า Escrow สำเร็จ!");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("ฝากเงินไม่สำเร็จ: " + (err.reason || err.message));
+            }
+        }
+
+        async function submitWork() {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+            const id = document.getElementById("submitProjectId").value;
+            const workHash = prompt("กรอกลิงก์ผลงาน หรือ URL ของงาน (เช่น GitHub / Google Drive):");
+
+            if (!workHash) return;
+
+            try {
+                const tx = await contract.submitWork(id, workHash);
+                alert("กำลังส่งมอบงาน... กรุณารอสักครู่");
+                await tx.wait();
+                alert("ส่งมอบงานเรียบร้อย!");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("ส่งงานไม่สำเร็จ: " + (err.reason || err.message));
+            }
+        }
+
+        async function approveAndRelease() {
+            if (!contract) { alert("Korona เชื่อมต่อ Wallet ก่อน"); return; }
+            const id = document.getElementById("approveProjectId").value;
+
+            try {
+                const tx = await contract.approveAndRelease(id);
+                alert("กำลังดำเนินการอนุมัติ... กรุณารอสักครู่");
+                await tx.wait();
+                alert("อนุมัติและโอนเงินให้ฟรีแลนซ์สำเร็จ!");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("อนุมัติไม่สำเร็จ: " + (err.reason || err.message));
+            }
+        }
+
+        async function raiseDispute() {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+            const id = document.getElementById("disputeProjectId").value;
+
+            try {
+                const tx = await contract.raiseDispute(id);
+                alert("กำลังแจ้งข้อพิพาท... กรุณารอสักครู่");
+                await tx.wait();
+                alert("แจ้งข้อพิพาทสำเร็จ! สถานะสัญญาถูกระงับ");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("แจ้งข้อพิพาทไม่สำเร็จ: " + (err.reason || err.message));
+            }
+        }
+
+        async function resolveDispute(payToFreelancer) {
+            if (!contract) { alert("กรุณาเชื่อมต่อ Wallet ก่อน"); return; }
+            const id = document.getElementById("adminProjectId").value;
+
+            try {
+                const tx = await contract.adminResolveDispute(id, payToFreelancer);
+                alert("แอดมินกำลังตัดสินข้อพิพาท... กรุณารอสักครู่");
+                await tx.wait();
+                alert("ตัดสินข้อพิพาทเรียบร้อย!");
+                loadProjects();
+            } catch (err) {
+                console.error(err);
+                alert("ตัดสินไม่สำเร็จ (เฉพาะแอดมินและโครงการต้องอยู่ในสถานะมีข้อพิพาทเท่านั้น): " + (err.reason || err.message));
+            }
+        }
+    </script>
+</body>
+
+</html>
