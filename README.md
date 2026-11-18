@@ -1,5 +1,5 @@
 # Freelance-Escrow
-SmartContractAddress : 0xC6b2c5E46075F9194166f7ef997f7BDe5628672 /n
+SmartContractAddress : 0xC6b2c5E46075F9194166f7ef997f7BDe5628672 <br>
 GitHub-Page : https://varakornspu.github.io/Freelance-Escrow/
 ผลการทดสอบ
 1.	เมื่อเข้าสู่บัญชีผู้ว่าจ้าง จะเห็นตารางประวัติรายการทำการ
